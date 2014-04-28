@@ -1,8 +1,9 @@
 {
-    "name": "breeze-metadata-gen",
-    "description": "A metadata generator that converts a JSON sample into Breeze Labs Metadata-Helper configuration objects for later editing and translation into Breeze metadata.",
-    "version": "0.1.0",
-    "private": true,
-    "dependencies": {
-    }
+  "name": "breeze-metadata-gen",
+  "description": "A metadata generator that converts a JSON sample into Breeze Labs Metadata-Helper configuration objects for later editing and translation into Breeze metadata.",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "underscore": "^1.6.0"
+  }
 }
