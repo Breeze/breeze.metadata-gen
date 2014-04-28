@@ -69,7 +69,7 @@
         var name = sampleNode.$type;
         if (!name) {
             if (parentProperty){
-                name = config.singularize(name);
+                name = config.singularize(parentProperty);
             } else if (!parentNode){
                 name = config.rootTypeName;
             }
