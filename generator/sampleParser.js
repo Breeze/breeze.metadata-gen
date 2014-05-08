@@ -57,67 +57,12 @@
     }
 
     function parseSampleNode(sampleNode, parsed, config, parentNode, parentProperty){
-        var type;
         var ref = sampleNode.$ref;
         if (ref && !isNaN(ref)) { return {$ref: Math.ceil(ref)};}
 
         var nodeId = sampleNode.$id || (sampleNode.$id = nextSampleNodeId++);
 
-        var typeName = config.getTypeName(sampleNode, parsed, config, parentNode, parentProperty);
-
-        if (typeName){
-            type = parsed.findTypeByName(typeName);
-        } else {
-            type = config.findTypeByStructure(sampleNode, parsed, config, parentNode, parentProperty);
-            if (type){
-                typeName = type.name;
-            }
-        }
-
-        if (typeName){
-            var t = config.createTypeFromSampleNode(sampleNode, parsed, config, parentNode, parentProperty);
-            t.name = typeName;
-            if (type){
-                var properties = type.properties;
-                // extend type with t.properties not already in type.properties
-                util.forEach(t.properties, function(prop){
-                    if (properties[prop.name] === undefined){
-                        prop.isNullable = true;
-                        properties[prop.name] = prop;
-                    }
-                });
-            } else {
-                parsed.types[typeName] = type = t;
-            }
-
-            sampleNode.$type = type;
-            util.forEach(type.properties, updateProperty);
-
-            function updateProperty(prop){
-                var value = sampleNode[prop.name];
-                if (Array.isArray(value)){
-                    prop.isScalar = prop.isScalar == null ? false : (prop.isScalar ? 'mixed' : false);
-                    var newValues = [];
-                    value.forEach(function(v){
-                        var newValue = config.parseSampleValue(v, parsed, config, sampleNode, prop.name );
-                        newValues.push(newValue);
-                    });
-                    var isEmpty = newValues.length === 0;
-                    setIsNullable(prop, isEmpty);
-                    if (!isEmpty){
-                        prop.sampleValues.push(newValues);
-                    }
-                } else {
-                    value = config.parseSampleValue(value, parsed, config, sampleNode, prop.name );
-                    var isNull = value == null; // null or undefined
-                    setIsNullable(prop, isNull);
-                    if (!isNull){
-                        prop.isScalar = prop.isScalar == null ? true : (prop.isScalar ? true : 'mixed');
-                        prop.sampleValues.push(value);
-                    }
-                }
-            }
-        }
+        createOrUpdateType(sampleNode, parsed, config, parentNode, parentProperty);
 
         parsed.sampleNodes[nodeId] = sampleNode;
 
@@ -126,11 +71,62 @@
         return {$ref: nodeId};
     }
 
+    function createOrUpdateType(sampleNode, parsed, config, parentNode, parentProperty){
+        var typeName = config.getTypeName(sampleNode, parsed, config, parentNode, parentProperty);
+        if(!typeName) {return; } // nothing we can do w/o a name
+        var type = parsed.findTypeByName(typeName);
+
+        var t = config.createTypeFromSampleNode(sampleNode, parsed, config, parentNode, parentProperty);
+        if (type){
+            // update type by extending with t.properties not already in type.properties
+            var properties = type.properties;
+            util.forEach(t.properties, function(tProp){
+                if (!properties.hasOwnProperty(tProp.name)){
+                    tProp.isNullable = true;
+                    properties[tProp.name] = tProp;
+                }
+            });
+        } else {
+            // create new type
+            t.name = typeName;
+            parsed.types[typeName] = type = t;
+        }
+
+        sampleNode.$type = type;
+        util.forEach(type.properties, updateProperty);
+
+        function updateProperty(prop){
+            var value = sampleNode[prop.name];
+            if (Array.isArray(value)){
+                prop.isScalar = prop.isScalar == null ? false : (prop.isScalar ? 'mixed' : false);
+                var newValues = [];
+                value.forEach(function(v){
+                    var newValue = config.parseSampleValue(v, parsed, config, sampleNode, prop.name );
+                    newValues.push(newValue);
+                });
+                var isEmpty = newValues.length === 0;
+                setIsNullable(prop, isEmpty);
+                if (!isEmpty){
+                    prop.sampleValues.push(newValues);
+                }
+            } else {
+                value = config.parseSampleValue(value, parsed, config, sampleNode, prop.name );
+                var isNull = value == null; // null or undefined
+                setIsNullable(prop, isNull);
+                if (!isNull){
+                    prop.isScalar = prop.isScalar == null ? true : (prop.isScalar ? true : 'mixed');
+                    prop.sampleValues.push(value);
+                }
+            }
+        }
+    }
+
+
     function parseSampleValue(value, parsed, config, parentNode, parentProperty){
         if (value === null || value === undefined || typeof value !== 'object'){
             return value;
         } else if (Array.isArray(value)) {
-            var msg = "Cannot handle the array of arrays in '" + parentProperty +
+            var msg = "Parser cannot handle the array of arrays in '" + parentProperty +
                 "' of sample node $" + (parentNode.$id || '??');
             util.log.error(msg);
             return undefined;

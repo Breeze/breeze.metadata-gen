@@ -5,7 +5,6 @@
 
     typeFns.BreezeDataTypeNames = getBreezeDataTypeNames();
     typeFns.createTypeFromSampleNode = createTypeFromSampleNode;
-    typeFns.findTypeByStructure = findTypeByStructure;
     typeFns.getTypeName = getTypeName;
     typeFns.getPropertyNamesFromSampleNode = getPropertyNamesFromSampleNode;
 
@@ -28,13 +27,6 @@
             }
         });
         return type;
-    }
-
-    // Try to determine if the sampleNode's type has been determined before
-    // by matching its structure with previously discovered types
-    function findTypeByStructure(sampleNode, parsed, config, parentNode, parentProperty){
-        // Not ready
-        return null;
     }
 
     function getBreezeDataTypeNames(){
@@ -64,7 +56,7 @@
         });
     }
 
-    // Try to determine if the type name for the sample node
+    // Try to determine the type name from the sample node and its context
     function getTypeName(sampleNode, parsed, config, parentNode, parentProperty){
         var name = sampleNode.$type;
         if (!name) {

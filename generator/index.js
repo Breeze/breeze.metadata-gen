@@ -29,7 +29,6 @@
         return {
             createTypeFromSampleNode: typeFns.createTypeFromSampleNode,
             defaultIntType: typeFns.BreezeDataTypeNames.Int64,
-            findTypeByStructure: typeFns.findTypeByStructure,
             getPropertyNamesFromSampleNode: typeFns.getPropertyNamesFromSampleNode,
             getTypeName: typeFns.getTypeName,
             isMongoDb: false,

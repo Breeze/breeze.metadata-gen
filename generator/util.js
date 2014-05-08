@@ -39,6 +39,7 @@
             log: function(message){ console.log(message);}
         };
     }
+
     function getTypeEnum(){ // JavaScript types
         return{
             STRING: "string",
